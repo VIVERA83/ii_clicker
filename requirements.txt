@@ -1,0 +1,7 @@
+uvicorn==0.27.1
+starlette==0.37.1
+pydantic==2.6.3
+pydantic_settings==2.2.1
+fastapi==0.110.0
+loguru==0.7.2
+httpcore==1.0.4
