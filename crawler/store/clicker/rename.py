@@ -2,16 +2,19 @@ from random import randint
 from time import sleep
 from typing import Any
 
-from icecream import ic
 from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
+
+from store.clicker.help import help_dict
 from temp.magnit.backoff import before_execution
 import asyncio
 import abc
+
+from icecream import ic
 
 
 class BaseClicker(abc.ABC):
@@ -24,6 +27,8 @@ class BaseClicker(abc.ABC):
         self.course = course
         self.min_sec = min_sec
         self.max_sec = max_sec
+        self.timeout = 10
+        self.questions: dict[str, str] = help_dict
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.page_load_strategy = "none"
@@ -36,7 +41,7 @@ class BaseClicker(abc.ABC):
 
     def start_course(self):
         self.driver.get(self.START_URL)
-        self._sleep()
+        self.sleep()
         self._click_greetings_button()
         self._click_login_button()
         self.init_course()
@@ -44,12 +49,12 @@ class BaseClicker(abc.ABC):
     def set_value_input(self, x_path, value):
         input_field = self.driver.find_element(by=By.XPATH, value=x_path)
         input_field.send_keys(value)
-        self._sleep()
+        self.sleep()
 
     def click_button(self, x_path) -> WebElement:
         button = self.driver.find_element(by=By.XPATH, value=x_path)
         button.click()
-        self._sleep()
+        self.sleep()
         return button
 
     @before_execution(logger=logger)
@@ -63,8 +68,10 @@ class BaseClicker(abc.ABC):
         self.set_value_input('//*[@id="password"]', self.password)
         self.click_button('//*[@id="submit-btn"]')
 
-    def _sleep(self):
-        sleep(randint(self.min_sec, self.max_sec))
+    def sleep(self, min_sec: int = None, max_sec: int = None):
+        min_sec = min_sec or self.min_sec
+        max_sec = max_sec or self.max_sec
+        sleep(randint(min_sec, max_sec))
 
     @staticmethod
     def create_link(url: str, params: dict[str, Any]):
@@ -83,13 +90,14 @@ class ProtectiveDrivingCourse(BaseClicker):
         self.click_begin_rating_protective_driving_button()
         self.click_resume_rating_protective_driving_button()
         self.click_start_rating_protective_driving_button()
-        self.get_question()
+        ic(self.driver.window_handles)
+        self._execute_course()
 
     @before_execution(logger=logger)
     def click_rating_protective_driving_button(self):
         url = self.create_link(self.MAGNUM_URL, self.COURSE_PARAMS)
         self.driver.get(url)
-        self._sleep()
+        self.sleep()
 
     @before_execution(logger=logger)
     def click_begin_rating_protective_driving_button(self):
@@ -113,51 +121,96 @@ class ProtectiveDrivingCourse(BaseClicker):
         self.click_button(x_path)
 
     @before_execution(logger=logger, total_timeout=5)
-    def get_question(self):
+    def _execute_course(self):
         frame_id = "cp_course_container"
-        wait = WebDriverWait(self.driver, 10)
-        frame = wait.until(EC.frame_to_be_available_and_switch_to_it(frame_id))
+        wait = WebDriverWait(self.driver, self.timeout)
+        wait.until(ec.frame_to_be_available_and_switch_to_it(frame_id))
+        question_elements = self.__get_question_elements()
+        self.__answer_questions(question_elements)
 
+        # window = self.driver.current_window_handle
+        # self.driver.switch_to.window(window)
+        self.driver.close()
+        self.sleep(2, 4)
+        ic(2222222222222222222222222222)
+        wait.until(ec.number_of_windows_to_be(1))
+        ic(2222222222222222222222222222)
+        sleep(2)
+        try:
+            ic(self.driver.window_handles)
+            self.driver.switch_to.window(self.driver.window_handles[0])
+            element = self.driver.find_element(By.ID, "buttons_area")
+            ic("yes")
+            element.find_element(By.TAG_NAME, "button").click()
+            ic(33333333333333333333333333333333333)
+        except Exception as e:
+            ic(e)
+        ic(33333333333333333333333333333333333)
+        # window = self.driver.current_window_handle
+        # self.driver.switch_to.window(window)
+        ic(3333333333333333333333333333)
+
+
+
+
+    def __get_question_elements(self) -> list[WebElement]:
         class_name = "wtq-question"
-        e = self.driver.find_elements(by=By.CLASS_NAME, value=class_name)
-        for question in e:
-            if text := question.find_element(by=By.CLASS_NAME, value="wtq-q-question-text").text:
-                ic(text)
-                items = question.find_elements(by=By.CLASS_NAME, value="wtq-item-table") or []
-                for index, item in enumerate(items):
-                    t = item.find_element(by=By.CLASS_NAME, value="wtq-item-text-cell-main").text
-                    ic(t)
+        question_elements = self.driver.find_elements(by=By.CLASS_NAME, value=class_name)
+        return question_elements
 
-                    # if index == r:
-                    # # if t == "Зевота":
-                    #     item.click()
-                    #     ic("click")
-                    #     question.find_element(by=By.CLASS_NAME, value="wtq-btn-text").click()
-                    #     break
-                    # else:
-                    #     ic("asdasdasdasd")
-                items[randint(1, 3)].find_element(By.CLASS_NAME, value="wt-radio-spot-outer").click()
-                ic("click")
-                "wtq-footer-cell-main"
-                "/html/body/div[1]/div[2]/div[2]/div[24]/div[4]/table/tbody/tr/td[2]/button[1]"
-
-                if i := question.find_element(by=By.CLASS_NAME, value="wtq-footer-cell-main"):
-                    button = i.find_elements(by=By.TAG_NAME, value='button')
-                    if button:
-                        ic("click next question")
-                        button[0].click()
-                    else:
-                        ic("no next question, button")
+    def __answer_questions(self, question_elements: list[WebElement]):
+        for question in question_elements:
+            if question_text := self._get_text_from_element(question, "wtq-q-question-text"):
+                print(f"question: {question_text}")
+                self.sleep(2, 4)
+                if correct_answer := self.questions.get(question_text):
+                    self.__select_answer(correct_answer, question)
                 else:
-                    ic("no next question, branch")
-                    break
-                sleep(2)
+                    self.__select_random_answer(question)
+                self.__click_next_question(question)
+
+    def __click_next_question(self, question):
+        try:
+            if button_element := self._get_web_elements(question, value="wtq-footer-cell-main"):
+                if button := self._get_web_elements(button_element[0], "button", By.TAG_NAME)[0]:
+                    button.click()
+                    ic("click next question")
+        except Exception as e:
+            ic(e)
+
+    def __select_answer(self, correct_answer, question):
+        # TODO: Поиск правильного ответа
+        answer_elements = self._get_web_elements(question, "wtq-item-table")
+        for answer in answer_elements:
+            answer_text = self._get_text_from_element(answer, "wtq-item-text-cell-main")
+            if answer_text == correct_answer:
+                self._get_web_elements(answer, "wt-radio-spot-outer")[0].click()
+                print(f"correct answer: {answer_text}")
+                return
+            else:
+                print("___incorrect answer: ", answer_text)
+        self.__select_random_answer(question)
+
+    def __select_random_answer(self, question: WebElement):
+        answer_elements = self._get_web_elements(question, "wtq-item-table")
+        count = len(answer_elements) - 1
+        self._get_web_elements(answer_elements[randint(0, count)], "wt-radio-spot-outer")[0].click()
+        print("random answer")
+
+    @staticmethod
+    def _get_text_from_element(element: WebElement, class_name: str) -> str:
+        return element.find_element(by=By.CLASS_NAME, value=class_name).text
+
+    @staticmethod
+    def _get_web_elements(element: WebElement, value: str, by: str = By.CLASS_NAME) -> list[WebElement]:
+        element = element.find_elements(by=by, value=value)
+        return element or []
 
 
 def main():
     username = "sergievskiy_an"
     password = "QQQQqqqq5555"
-    magnum = ProtectiveDrivingCourse(username, password, "sdka;skd;aksd;alksd")
+    magnum = ProtectiveDrivingCourse(username, password, "hello world")
     try:
         magnum.start_course()
     except Exception as ex:
@@ -169,29 +222,8 @@ def main():
 
 if __name__ == "__main__":
     asyncio.run(asyncio.to_thread(main))
-# """/qtiplayer3/presentation.htm?path=/webtutor/test_ATP_zashitnoe_vozhdenie/1/&aicc_sid=7342589899979036765&aicc_url=%2Fhandler%2Ehtml&width=750&height=530&fit=2&lang=ru&send=q&display=item&rubric=none&map=1&navmap=1&navstrict=1&navprog=1&timing=1&nextbind=1&reslock=0&break=0&displayresscore=1&feedback=0&failed=0&displaymax=1"""
-# class ="wtq-question" wtq-elem="question" wtq-view="item" data-ident="6961385648709519131" style="visibility: visible; left: 0px;" >
-# """
-# import asyncio
-# import concurrent.futures
-# import time
-#
-# def sync_func(x):
-#     time.sleep(1)  # Это блокирующая операция
-#     return x * x
-#
-# async def main():
-#     with concurrent.futures.ProcessPoolExecutor() as executor:
-#         future = executor.submit(sync_func, 2)
-#         result = await loop.run_in_executor(None, future.result)
-#         print(f"Результат: {result}")
-#
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(main())
-# """
-#
-# #
-# # @dataclass
-# # class Course:
-# #     rating_protective_driving_: str = "https://magnum.magnit.ru/view_doc.html?mode=course&doc_id=6929760816126312392&object_id=6961398061758971672"
-# #     # "https://magnum.magnit.ru/view_doc.html?mode=course&doc_id=6929760816126312392&object_id=6961398061758971672"
+# "mdl-cell--12-col mdl-cell"
+# "buttons_area"
+# "//*[@id="buttons_area"]/button"
+# "/html/body/div[2]/div/main/div/div[3]/div[3]/main/div[2]/section[1]/div/div[1]"
+#"#buttons_area > button"
