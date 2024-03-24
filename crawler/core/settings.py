@@ -96,3 +96,46 @@ class LogSettings(Base):
     guru: bool
     traceback: bool
 
+
+class PostgresSettings(Base):
+    """Settings for PostgresSQL database connections.
+
+    Attributes:
+        postgres_db: The name of the database.
+        postgres_user: The username for the database.
+        postgres_password: The password for the database.
+        postgres_host: The hostname or IP address of the database server.
+        postgres_port: The port number of the database server.
+        postgres_schema: The name of the schema to use.
+
+    Methods:
+        dsn: Returns the connection URL as a string.
+    """
+
+    postgres_db: str
+    postgres_user: str
+    postgres_password: SecretStr
+    postgres_host: str
+    postgres_port: str
+    postgres_schema: str
+
+    def dsn(self, show_secret: bool = False) -> str:
+        """Returns the connection URL as a string.
+
+        Args:
+            show_secret (bool, optional): Whether to show the secret. Defaults to False.
+
+        Returns:
+            str: The connection URL.
+        """
+        return "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
+            user=self.postgres_user,
+            password=(
+                self.postgres_password.get_secret_value()
+                if show_secret
+                else self.postgres_password
+            ),
+            host=self.postgres_host,
+            port=self.postgres_port,
+            db=self.postgres_db,
+        )
