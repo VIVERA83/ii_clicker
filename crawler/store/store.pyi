@@ -1,4 +1,5 @@
 from core.components import Application
+from store.clicker.accessor import ClickerAccessor
 from store.quiz.accessor import QuizAccessor
 from store.quiz.manager import QuizManager
 
@@ -7,6 +8,7 @@ class Store:
     """Store, data car and working with it."""
     quiz: QuizAccessor
     quiz_manager: QuizManager
+    clicker: ClickerAccessor
 
     def __init__(self, app: Application):
         """
