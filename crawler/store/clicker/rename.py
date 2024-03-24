@@ -127,31 +127,14 @@ class ProtectiveDrivingCourse(BaseClicker):
         wait.until(ec.frame_to_be_available_and_switch_to_it(frame_id))
         question_elements = self.__get_question_elements()
         self.__answer_questions(question_elements)
-
-        # window = self.driver.current_window_handle
-        # self.driver.switch_to.window(window)
         self.driver.close()
         self.sleep(2, 4)
-        ic(2222222222222222222222222222)
-        wait.until(ec.number_of_windows_to_be(1))
-        ic(2222222222222222222222222222)
-        sleep(2)
-        try:
-            ic(self.driver.window_handles)
-            self.driver.switch_to.window(self.driver.window_handles[0])
-            element = self.driver.find_element(By.ID, "buttons_area")
-            ic("yes")
-            element.find_element(By.TAG_NAME, "button").click()
-            ic(33333333333333333333333333333333333)
-        except Exception as e:
-            ic(e)
-        ic(33333333333333333333333333333333333)
-        # window = self.driver.current_window_handle
-        # self.driver.switch_to.window(window)
-        ic(3333333333333333333333333333)
+        self.__close_course()
 
-
-
+    def __close_course(self):
+        self.driver.switch_to.window(self.driver.window_handles[0])
+        element = self.driver.find_element(By.ID, "buttons_area")
+        element.find_element(By.TAG_NAME, "button").click()
 
     def __get_question_elements(self) -> list[WebElement]:
         class_name = "wtq-question"
@@ -226,4 +209,4 @@ if __name__ == "__main__":
 # "buttons_area"
 # "//*[@id="buttons_area"]/button"
 # "/html/body/div[2]/div/main/div/div[3]/div[3]/main/div[2]/section[1]/div/div[1]"
-#"#buttons_area > button"
+# "#buttons_area > button"
