@@ -1,7 +1,7 @@
 # Byte-compiled / optimized / DLL files
 .env_crawler
 .idea/
-
+temp/
 __pycache__/
 *.py[cod]
 *$py.class

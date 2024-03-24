@@ -1,35 +1,25 @@
 from typing import Any
 
+from fastapi import APIRouter
 from icecream import ic
 
-from clicker.schemes import OkSchema, QuestionSchema
+from base.schemas import OkSchema
+from clicker.schemes import CourseSchema
 from core.components import Request
-from fastapi import APIRouter
 
-clicker_route = APIRouter()
-
-
-@clicker_route.post(
-    "/add_course_theme",
-    summary="test endpoint",
-    description="test endpoint",
-    response_model=OkSchema,
-)
-async def add_course_theme(request: "Request", theme: str) -> Any:
-    await request.app.store.quiz_manager.add_theme(theme)
-    message = f"New theme added: {theme}"
-    request.app.logger.info(message)
-    return OkSchema(message=message)
+clicker_route = APIRouter(tags=["Clicker"])
 
 
 @clicker_route.post(
-    "/add_new_question",
-    summary="test endpoint",
-    description="test endpoint",
+    "/auto_scroll_course",
+    summary="Auto scroll course",
+    description="Complete the set course in automatic mode",
     response_model=OkSchema,
 )
-async def add_new_question(request: "Request", question: QuestionSchema) -> Any:
-    await request.app.store.quiz_manager.add_question(**question.model_dump())
-    message = f"New question added: {question}"
+async def auto_scroll_course(request: "Request", course: CourseSchema) -> Any:
+    course = {"login": "sergievskiy_an",
+              "password": "QQQQqqqq5555",
+              "course": "Защитное Вождение"}
+    message = f": {course}"
     request.app.logger.info(message)
     return OkSchema(message=message)
