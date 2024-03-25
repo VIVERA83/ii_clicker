@@ -26,11 +26,11 @@ class ExceptionHandler:
         self.is_traceback = is_traceback
 
     def __call__(
-        self,
-        exception: Exception,
-        url: URL,
-        logger: Logger = None,
-        is_traceback: bool = True,
+            self,
+            exception: Exception,
+            url: URL,
+            logger: Logger = None,
+            is_traceback: bool = True,
     ) -> JSONResponse:
         """This method is used to handle an exception.
 
@@ -67,22 +67,23 @@ class ExceptionHandler:
             msg = traceback.format_exc()
         else:
             msg = f"url={url}, exception={self.exception.__class__}, message_to_user={self.exception}"
-        match self.level:
-            case "CRITICAL" | 50:
+        if self.level:
+            if self.level == "CRITICAL" or self.level == 50:
                 msg = (
-                    f" \n_____________\n "
-                    f"WARNING: an error has occurred to which there is no correct response of the application."
-                    f" WE NEED TO RESPOND URGENTLY"
-                    f" \nExceptionHandler:  {str(self.exception)}\n"
-                    f" _____________\n" + traceback.format_exc()
+                        f" \n_____________\n "
+                        f"WARNING: an error has occurred to which there is no correct response of the application."
+                        f" WE NEED TO RESPOND URGENTLY"
+                        f" \nExceptionHandler:  {str(self.exception)}\n"
+                        f" _____________\n" + traceback.format_exc()
                 )
                 self.logger.critical(msg)
-            case "ERROR" | 40:
+            elif self.level == "ERROR" or self.level == 40:
                 self.logger.error(msg)
-            case "WARNING" | 30:
+            elif self.level == "WARNING" or self.level == 30:
                 self.logger.warning(msg)
-            case _:
+            else:
                 self.logger.info(msg)
+
         return JSONResponse(content=content_data, status_code=self.status_code)
 
     def handler_exception(self):

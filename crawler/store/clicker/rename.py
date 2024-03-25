@@ -1,3 +1,4 @@
+import asyncio
 from random import randint
 from time import sleep
 from typing import Any
@@ -9,12 +10,14 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
+from store.clicker.backoff import before_execution
 from store.clicker.help import help_dict
-from temp.magnit.backoff import before_execution
-import asyncio
+
 import abc
 
 from icecream import ic
+
+ic.includeContext = True
 
 
 class BaseClicker(abc.ABC):
@@ -30,10 +33,18 @@ class BaseClicker(abc.ABC):
         self.timeout = 10
         self.questions: dict[str, str] = help_dict
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.page_load_strategy = "none"
-        # self.driver = webdriver.Chrome(options=options)
-        self.driver = webdriver.Chrome()
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--headless=new')
+        options.add_argument('--start-maximized')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--allow-running-insecure-content')
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        options.add_argument(f'user-agent={user_agent}')
+        self.driver = webdriver.Chrome(options=options)
+        # self.driver = webdriver.Chrome("/home/root/chromedriver")
 
     @abc.abstractmethod
     def init_course(self):
@@ -125,6 +136,7 @@ class ProtectiveDrivingCourse(BaseClicker):
         frame_id = "cp_course_container"
         wait = WebDriverWait(self.driver, self.timeout)
         wait.until(ec.frame_to_be_available_and_switch_to_it(frame_id))
+        ic(frame_id)
         question_elements = self.__get_question_elements()
         self.__answer_questions(question_elements)
         self.driver.close()
@@ -139,18 +151,22 @@ class ProtectiveDrivingCourse(BaseClicker):
     def __get_question_elements(self) -> list[WebElement]:
         class_name = "wtq-question"
         question_elements = self.driver.find_elements(by=By.CLASS_NAME, value=class_name)
+        ic(question_elements)
         return question_elements
 
     def __answer_questions(self, question_elements: list[WebElement]):
-        for question in question_elements:
-            if question_text := self._get_text_from_element(question, "wtq-q-question-text"):
-                print(f"question: {question_text}")
-                self.sleep(2, 4)
-                if correct_answer := self.questions.get(question_text):
-                    self.__select_answer(correct_answer, question)
-                else:
-                    self.__select_random_answer(question)
-                self.__click_next_question(question)
+        try:
+            for question in question_elements:
+                if question_text := self._get_text_from_element(question, "wtq-q-question-text"):
+                    print(f"question: {question_text}")
+                    self.sleep(2, 4)
+                    if correct_answer := self.questions.get(question_text):
+                        self.__select_answer(correct_answer, question)
+                    else:
+                        self.__select_random_answer(question)
+                    self.__click_next_question(question)
+        except Exception as e:
+            ic(f"__answer_questions {e}")
 
     def __click_next_question(self, question):
         try:
@@ -159,7 +175,7 @@ class ProtectiveDrivingCourse(BaseClicker):
                     button.click()
                     ic("click next question")
         except Exception as e:
-            ic(e)
+            ic(f"__click_next_question {e}")
 
     def __select_answer(self, correct_answer, question):
         # TODO: Поиск правильного ответа
@@ -191,8 +207,8 @@ class ProtectiveDrivingCourse(BaseClicker):
 
 
 def main():
-    username = "sergievskiy_an"
-    password = "QQQQqqqq5555"
+    username = "mikhaylenko_ay"
+    password = "XXXXxxxx7777!"
     magnum = ProtectiveDrivingCourse(username, password, "hello world")
     try:
         magnum.start_course()
