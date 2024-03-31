@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, Tuple, Type, TypeVar, Union
 
+from base.base_accessor import BaseAccessor
+from core.settings import PostgresSettings
 from sqlalchemy import (
     DATETIME,
     TIMESTAMP,
@@ -12,16 +14,14 @@ from sqlalchemy import (
     UpdateBase,
     ValuesBase,
     func,
-    text, select,
+    select,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID, insert
 from sqlalchemy.dialects.postgresql.dml import Insert
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.orm.decl_api import DeclarativeAttributeIntercept, MappedAsDataclass
-
-from base.base_accessor import BaseAccessor
-from core.settings import PostgresSettings
 
 Query = Union[ValuesBase, Select, UpdateBase, Delete, Insert]
 Model = TypeVar("Model", bound=DeclarativeAttributeIntercept)
@@ -154,7 +154,7 @@ class Postgres(BaseAccessor):
 
     @staticmethod
     def get_query_filter(
-            model: Model, page: int = 0, size: int = 10, sort_params: Sorted_order = None
+        model: Model, page: int = 0, size: int = 10, sort_params: Sorted_order = None
     ) -> Query:
         """Get query filter by sorted parameters.
 

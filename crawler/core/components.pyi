@@ -3,7 +3,6 @@ import logging
 from core.settings import AppSettings
 from fastapi import FastAPI
 from fastapi import Request as FastAPIRequest
-
 from store.database.postgres import Postgres
 from store.store import Store
 
@@ -26,7 +25,6 @@ class Application(FastAPI):
     logger: logging.Logger
     docs_url: str
     postgres: Postgres
-
 
 class Request(FastAPIRequest):
     """Request overrides.

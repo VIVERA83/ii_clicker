@@ -14,4 +14,3 @@ class QuestionSchema(BaseModel):
 class AnswerSchema(BaseModel):
     title: str
     is_correct: bool
-

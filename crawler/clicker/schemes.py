@@ -8,4 +8,6 @@ COURSE_NAMES = Literal["Защитное Вождение", "Экономиче�
 class CourseSchema(BaseModel):
     login: str = Field(description="Your login", example="ivanov")
     password: str = Field(description="Your password", example="mypass")
-    course: list[COURSE_NAMES] = Field(description="Your course", example=["Защитное Вождение"])
+    course: list[COURSE_NAMES] = Field(
+        description="Your course", example=["Защитное Вождение"]
+    )

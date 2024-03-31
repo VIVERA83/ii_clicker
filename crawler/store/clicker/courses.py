@@ -1,8 +1,10 @@
-from enum import Enum
-from typing import Union, Type
 from dataclasses import dataclass
+from enum import Enum
+from typing import Type, Union
 
-TRAINING_TYPE = Union[Type["DriverCourseType"], Type["DispatcherCourseType"], Type["MentorCourseType"]]
+TRAINING_TYPE = Union[
+    Type["DriverCourseType"], Type["DispatcherCourseType"], Type["MentorCourseType"]
+]
 
 
 class CourseType(Enum):
@@ -92,5 +94,5 @@ class TrainingCourse:
         return {
             "mode": self.mode,
             "doc_id": self.training_type.doc_id,
-            "object_id": getattr(self.training_type, course.name)
+            "object_id": getattr(self.training_type, course.name),
         }

@@ -26,11 +26,11 @@ class ExceptionHandler:
         self.is_traceback = is_traceback
 
     def __call__(
-            self,
-            exception: Exception,
-            url: URL,
-            logger: Logger = None,
-            is_traceback: bool = True,
+        self,
+        exception: Exception,
+        url: URL,
+        logger: Logger = None,
+        is_traceback: bool = True,
     ) -> JSONResponse:
         """This method is used to handle an exception.
 
@@ -70,11 +70,11 @@ class ExceptionHandler:
         if self.level:
             if self.level == "CRITICAL" or self.level == 50:
                 msg = (
-                        f" \n_____________\n "
-                        f"WARNING: an error has occurred to which there is no correct response of the application."
-                        f" WE NEED TO RESPOND URGENTLY"
-                        f" \nExceptionHandler:  {str(self.exception)}\n"
-                        f" _____________\n" + traceback.format_exc()
+                    f" \n_____________\n "
+                    f"WARNING: an error has occurred to which there is no correct response of the application."
+                    f" WE NEED TO RESPOND URGENTLY"
+                    f" \nExceptionHandler:  {str(self.exception)}\n"
+                    f" _____________\n" + traceback.format_exc()
                 )
                 self.logger.critical(msg)
             elif self.level == "ERROR" or self.level == 40:

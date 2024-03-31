@@ -1,4 +1,5 @@
 """A module describing services for working with data."""
+
 from store.clicker.accessor import ClickerAccessor
 from store.database.postgres import Postgres
 from store.quiz.accessor import QuizAccessor

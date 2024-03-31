@@ -1,36 +1,35 @@
+import abc
+from logging import Logger, getLogger
 from random import randint
 from time import sleep
 from typing import Any
-
-from logging import Logger, getLogger
 
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-
+from selenium.webdriver.support.ui import WebDriverWait
 from store.clicker.backoff import before_execution
-
-import abc
 
 
 class BaseClicker(abc.ABC):
     START_URL = "https://tvoy.magnit.ru/"
     MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
-    def __init__(self,
-                 login: str,
-                 password: str,
-                 course: str,
-                 questions: dict[str, str],
-                 min_sec: int = 3,
-                 max_sec: int = 6,
-                 min_sec_answer: int = 15,
-                 max_sec_answer: int = 20,
-                 logger: Logger = None):
+    def __init__(
+        self,
+        login: str,
+        password: str,
+        course: str,
+        questions: dict[str, str],
+        min_sec: int = 3,
+        max_sec: int = 6,
+        min_sec_answer: int = 15,
+        max_sec_answer: int = 20,
+        logger: Logger = None,
+    ):
         self.loger = logger or getLogger(name=__name__)
         self.login = login
         self.password = password
@@ -47,20 +46,19 @@ class BaseClicker(abc.ABC):
     def get_driver_options() -> Options:
         options = webdriver.ChromeOptions()
         options.add_argument("--window-size=1920,1080")
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--headless=new')
-        options.add_argument('--start-maximized')
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--allow-running-insecure-content')
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--headless=new")
+        options.add_argument("--start-maximized")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--allow-running-insecure-content")
         user_agent = UserAgent(browsers=["chrome"]).getRandom.get("useragent")
-        options.add_argument(f'user-agent={user_agent}')
+        options.add_argument(f"user-agent={user_agent}")
         return options
 
     @abc.abstractmethod
-    def init_course(self):
-        ...
+    def init_course(self): ...
 
     def start_course(self):
         self.driver.get(self.START_URL)
@@ -107,7 +105,7 @@ class ProtectiveDrivingCourse(BaseClicker):
     COURSE_PARAMS = {
         "mode": "course",
         "doc_id": "6929760816126312392",
-        "object_id": "6961398061758971672"
+        "object_id": "6961398061758971672",
     }
 
     def init_course(self):
@@ -141,7 +139,7 @@ class ProtectiveDrivingCourse(BaseClicker):
     @before_execution(total_timeout=10)
     def __click_start_rating_protective_driving_button(self):
         self.driver.switch_to.window(self.driver.window_handles[1])
-        x_path = '/html/body/div[1]/div[1]/div/div[2]/div[2]/div[1]/ul/li[2]/div[1]'
+        x_path = "/html/body/div[1]/div[1]/div/div[2]/div[2]/div[1]/ul/li[2]/div[1]"
         self.click_button(x_path)
 
     @before_execution(total_timeout=5)
@@ -165,12 +163,16 @@ class ProtectiveDrivingCourse(BaseClicker):
 
     def __get_question_elements(self) -> list[WebElement]:
         class_name = "wtq-question"
-        question_elements = self.driver.find_elements(by=By.CLASS_NAME, value=class_name)
+        question_elements = self.driver.find_elements(
+            by=By.CLASS_NAME, value=class_name
+        )
         return question_elements
 
     def __answer_questions(self, question_elements: list[WebElement]):
         for index, question in enumerate(question_elements):
-            if question_text := self._get_text_from_element(question, "wtq-q-question-text"):
+            if question_text := self._get_text_from_element(
+                question, "wtq-q-question-text"
+            ):
                 self.loger.info(f"question {index}: {question_text}")
                 self.sleep(self.min_sec_answer, self.max_sec_answer)
 
@@ -182,8 +184,12 @@ class ProtectiveDrivingCourse(BaseClicker):
 
     def __click_next_question(self, question):
         try:
-            if button_element := self._get_web_elements(question, value="wtq-footer-cell-main"):
-                if button := self._get_web_elements(button_element[0], "button", By.TAG_NAME)[0]:
+            if button_element := self._get_web_elements(
+                question, value="wtq-footer-cell-main"
+            ):
+                if button := self._get_web_elements(
+                    button_element[0], "button", By.TAG_NAME
+                )[0]:
                     button.click()
         except Exception as e:
             self.loger.error(f"__click_next_question {e}")
@@ -202,7 +208,9 @@ class ProtectiveDrivingCourse(BaseClicker):
     def __select_random_answer(self, question: WebElement):
         answer_elements = self._get_web_elements(question, "wtq-item-table")
         count = len(answer_elements) - 1
-        self._get_web_elements(answer_elements[randint(0, count)], "wt-radio-spot-outer")[0].click()
+        self._get_web_elements(
+            answer_elements[randint(0, count)], "wt-radio-spot-outer"
+        )[0].click()
         self.loger.info(f"random answer")
 
     @staticmethod
@@ -210,6 +218,8 @@ class ProtectiveDrivingCourse(BaseClicker):
         return element.find_element(by=By.CLASS_NAME, value=class_name).text
 
     @staticmethod
-    def _get_web_elements(element: WebElement, value: str, by: str = By.CLASS_NAME) -> list[WebElement]:
+    def _get_web_elements(
+        element: WebElement, value: str, by: str = By.CLASS_NAME
+    ) -> list[WebElement]:
         element = element.find_elements(by=by, value=value)
         return element or []

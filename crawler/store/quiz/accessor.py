@@ -7,7 +7,7 @@ from store.quiz.models import MODEL
 class QuizAccessor(BaseAccessor):
 
     async def create_or_update_many(
-            self, model: MODEL, data: list[dict[str, Any]], index: list[str]
+        self, model: MODEL, data: list[dict[str, Any]], index: list[str]
     ):
         """
         Create multiple records in the database.

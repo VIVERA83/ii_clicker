@@ -3,7 +3,6 @@ from typing import Any
 from base.schemas import OkSchema
 from core.components import Request
 from fastapi import APIRouter
-
 from quiz.schemes import QuestionSchema
 
 quiz_route = APIRouter(tags=["Quiz"])

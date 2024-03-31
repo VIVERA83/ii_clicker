@@ -1,7 +1,7 @@
 import logging
-from time import sleep, monotonic
 from functools import wraps
 from random import randint
+from time import monotonic, sleep
 from typing import Any, Callable
 
 __all__ = ["before_execution"]
@@ -17,10 +17,10 @@ def delta_time() -> float:
 
 
 def before_execution(
-        total_timeout=10,
-        request_timeout: int = 3,
-        logger: logging.Logger = logging.getLogger(name="before_execution"),
-        raise_exception: bool = True,
+    total_timeout=10,
+    request_timeout: int = 3,
+    logger: logging.Logger = logging.getLogger(name="before_execution"),
+    raise_exception: bool = True,
 ) -> Any:
     """Декоратор, который пытается выполнить входящий вызываемый объект.
 
@@ -61,7 +61,9 @@ def before_execution(
                     )
                     logger.error(msg)
                     sleep(sec)
-            logger.warning(f" Failed to execute: {func.__name__}", )
+            logger.warning(
+                f" Failed to execute: {func.__name__}",
+            )
             if raise_exception:
                 raise error
             return None

@@ -3,9 +3,9 @@ from store.clicker.accessor import ClickerAccessor
 from store.quiz.accessor import QuizAccessor
 from store.quiz.manager import QuizManager
 
-
 class Store:
     """Store, data car and working with it."""
+
     quiz: QuizAccessor
     quiz_manager: QuizManager
     clicker: ClickerAccessor
@@ -17,7 +17,6 @@ class Store:
         Args:
             app (Application): The main application component.
         """
-
 
 def setup_store(app: Application):
     app.store = Store(app)
