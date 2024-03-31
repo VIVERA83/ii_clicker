@@ -12,7 +12,7 @@ from sqlalchemy import (
     UpdateBase,
     ValuesBase,
     func,
-    text,
+    text, select,
 )
 from sqlalchemy.dialects.postgresql import UUID, insert
 from sqlalchemy.dialects.postgresql.dml import Insert
@@ -151,3 +151,24 @@ class Postgres(BaseAccessor):
             result = [await session.execute(q) for q in query]
             await session.commit()
             return result
+
+    @staticmethod
+    def get_query_filter(
+            model: Model, page: int = 0, size: int = 10, sort_params: Sorted_order = None
+    ) -> Query:
+        """Get query filter by sorted parameters.
+
+        Args:
+            model: Model table
+            page: number of page
+            size: page size
+            sort_params: sort parameters
+
+        Returns:
+            query: Query object
+        """
+        query = select(model).limit(size).offset(page * size)
+        query_sort = ", ".join(
+            [f"{name} {value}" for name, value in sort_params.items()]
+        )
+        return query.order_by(text(query_sort))

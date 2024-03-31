@@ -1,6 +1,8 @@
 from typing import Any
 from uuid import uuid4
 
+from sqlalchemy import text
+
 from base.base_accessor import BaseAccessor
 from store.quiz.models import ThemeModel, QuestionModel, AnswerModel
 
@@ -36,3 +38,17 @@ class QuizManager(BaseAccessor):
                    AnswerModel.is_correct.name: is_correct,
                    }],
             index=[AnswerModel.id.name])
+
+    async def get_questions_by_theme(self, theme: str) -> list[dict[str, Any]]:
+        smtp = text("""
+        SELECT * FROM questions q
+        INNER JOIN themes t ON q.theme = t.title
+        WHERE t.title = :theme
+        """)
+        result = await self.app.postgres.query_execute(smtp)
+        
+
+
+
+
+

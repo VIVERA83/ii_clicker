@@ -1,11 +1,11 @@
 from typing import Any
 
 from fastapi import APIRouter
-from icecream import ic
 
 from base.schemas import OkSchema
 from clicker.schemes import CourseSchema
 from core.components import Request
+from store.clicker.help import help_dict
 from store.clicker.rename import ProtectiveDrivingCourse
 
 clicker_route = APIRouter(tags=["Clicker"])
@@ -18,19 +18,17 @@ clicker_route = APIRouter(tags=["Clicker"])
     response_model=OkSchema,
 )
 async def auto_scroll_course(request: "Request", course: CourseSchema) -> Any:
-    course = {"login": "sergievskiy_an",
-              "password": "QQQQqqqq5555",
-              "course": "Защитное Вождение"}
-    message = f": {course}"
-    request.app.logger.info(message)
-    username = "sergievskiy_an"
-    password = "QQQQqqqq5555"
-    magnum = ProtectiveDrivingCourse(username, password, "hello world")
+    request.app.logger.info(f"Add new course: {course}")
+    magnum = ProtectiveDrivingCourse(course.login, course.password,
+                                     "hello world",
+                                     help_dict,
+                                     min_sec_answer=5,
+                                     max_sec_answer=10,
+                                     logger=request.app.logger)
     try:
         magnum.start_course()
     except Exception as ex:
-        ic(ex)
+        raise Exception(ex.args[0])
     finally:
         magnum.driver.quit()
-
-    return OkSchema(message=message)
+    return OkSchema(message="Course completed successfully")

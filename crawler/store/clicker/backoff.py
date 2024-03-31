@@ -19,7 +19,7 @@ def delta_time() -> float:
 def before_execution(
         total_timeout=10,
         request_timeout: int = 3,
-        logger: logging.Logger = logging.getLogger(),
+        logger: logging.Logger = logging.getLogger(name="before_execution"),
         raise_exception: bool = True,
 ) -> Any:
     """Декоратор, который пытается выполнить входящий вызываемый объект.
