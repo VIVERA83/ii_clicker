@@ -8,7 +8,7 @@ TRAINING_TYPE = Union[
     Type["RatingCourseType"],
     Type["DriverCourseType"],
     Type["DispatcherCourseType"],
-    Type["MentorCourseType"]
+    Type["MentorCourseType"],
 ]
 
 
@@ -106,7 +106,7 @@ class TrainingCourse:
         }
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from icecream import ic
 
     ic.includeContext = True

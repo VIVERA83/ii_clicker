@@ -79,7 +79,7 @@ class CourseClicker:
         self.click_button(x_path)
         self.loger.info("Начальная страница пройдена")
 
-    @before_execution()
+    # @before_execution()
     def _click_login_button(self):
         self.set_value_input('//*[@id="username"]', self.login)
         self.set_value_input('//*[@id="password"]', self.password)
@@ -92,7 +92,13 @@ class CourseClicker:
         sleep(randint(min_sec, max_sec))
 
     def create_link(self):
-        return self.MAGNUM_URL + "?" + "&".join([f"{k}={v}" for k, v in self.training_course.get_params().items()])
+        return (
+                self.MAGNUM_URL
+                + "?"
+                + "&".join(
+            [f"{k}={v}" for k, v in self.training_course.get_params().items()]
+        )
+        )
 
     def init_course(self):
         self.questions = self.training_course.get_questions()
@@ -199,6 +205,11 @@ class CourseClicker:
             answer_elements[randint(0, count)], "wt-radio-spot-outer"
         )[0].click()
         self.loger.info(f"random answer")
+
+        # TODO: delete this code after fix api
+        for el in answer_elements:
+            print(f"{self._get_text_from_element(el, "wtq-item-text-cell-main")}")
+        # TODO stop
 
     @staticmethod
     def _get_text_from_element(element: WebElement, class_name: str) -> str:

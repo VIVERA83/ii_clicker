@@ -1,13 +1,28 @@
-from typing import Literal
+from enum import Enum
 
 from pydantic import BaseModel, Field
 
-COURSE_NAMES = Literal["Защитное Вождение", "Экономическое Вождение"]
+from store.clicker.courses import (
+    CourseType,
+)
+
+
+class CourseTypeEnum(Enum):
+    driver = "стажировка водителя-экспедитора"
+    dispatcher = "стажировка водителя-диспетчера"
+    mentor = "стажировка наставника"
+    rating = "по рейтингу"
 
 
 class CourseSchema(BaseModel):
     login: str = Field(description="Your login", example="ivanov")
     password: str = Field(description="Your password", example="mypass")
-    course: list[COURSE_NAMES] = Field(
-        description="Your course", example=["Защитное Вождение"]
+    course_type: CourseTypeEnum
+    course: list[CourseType] = Field(
+        description="Your course",
+        example=[
+            CourseType.eco_small,
+            CourseType.protective_driving,
+            CourseType.final_test_c_pd,
+        ],
     )
