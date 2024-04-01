@@ -1,11 +1,8 @@
-import abc
 from logging import Logger, getLogger
 from random import randint
 from time import sleep
-from typing import Any
 
 from fake_useragent import UserAgent
-from icecream import ic
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -13,9 +10,10 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from store.clicker.backoff import before_execution
+from store.clicker.courses import TrainingCourse
 
 
-class BaseClicker(abc.ABC):
+class CourseClicker:
     START_URL = "https://tvoy.magnit.ru/"
     MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
@@ -23,8 +21,7 @@ class BaseClicker(abc.ABC):
             self,
             login: str,
             password: str,
-            course: str,
-            questions: dict[str, str],
+            training_course: TrainingCourse,
             min_sec: int = 3,
             max_sec: int = 6,
             min_sec_answer: int = 15,
@@ -34,13 +31,13 @@ class BaseClicker(abc.ABC):
         self.loger = logger or getLogger(name=__name__)
         self.login = login
         self.password = password
-        self.course = course
+        self.training_course = training_course
         self.min_sec = min_sec
         self.max_sec = max_sec
         self.min_sec_answer = min_sec_answer
         self.max_sec_answer = max_sec_answer
         self.timeout = 10
-        self.questions = questions
+        self.questions = {}
         self.driver = webdriver.Chrome(options=self.get_driver_options())
 
     @staticmethod
@@ -57,9 +54,6 @@ class BaseClicker(abc.ABC):
         user_agent = UserAgent(browsers=["chrome"]).getRandom.get("useragent")
         options.add_argument(f"user-agent={user_agent}")
         return options
-
-    @abc.abstractmethod
-    def init_course(self): ...
 
     def start_course(self):
         self.driver.get(self.START_URL)
@@ -97,19 +91,11 @@ class BaseClicker(abc.ABC):
         max_sec = max_sec or self.max_sec
         sleep(randint(min_sec, max_sec))
 
-    @staticmethod
-    def create_link(url: str, params: dict[str, Any]):
-        return url + "?" + "&".join([f"{k}={v}" for k, v in params.items()])
-
-
-class ProtectiveDrivingCourse(BaseClicker):
-    COURSE_PARAMS = {
-        "mode": "course",
-        "doc_id": "6929760816126312392",
-        "object_id": "6961398061758971672" #"6924645368353934140",  # "6961398061758971672",
-    }
+    def create_link(self):
+        return self.MAGNUM_URL + "?" + "&".join([f"{k}={v}" for k, v in self.training_course.get_params().items()])
 
     def init_course(self):
+        self.questions = self.training_course.get_questions()
         self.go_to_course()
         self.click_start_course_button()
         self.click_resume_course_button()
@@ -118,7 +104,7 @@ class ProtectiveDrivingCourse(BaseClicker):
 
     @before_execution()
     def go_to_course(self):
-        url = self.create_link(self.MAGNUM_URL, self.COURSE_PARAMS)
+        url = self.create_link()
         self.driver.get(url)
         self.sleep()
 
@@ -132,22 +118,17 @@ class ProtectiveDrivingCourse(BaseClicker):
         x_path = '//*[@id="buttons_area"]/button'
         self.click_button(x_path)
 
-    # @before_execution()
-    # def click_start_rating_protective_driving_button(self):
-    #     x_path = '//*[@id="buttons_area"]/button[2]'
-    #     self.click_button(x_path)
-
     @before_execution(total_timeout=10)
     def click_start_test(self):
         self.driver.switch_to.window(self.driver.window_handles[1])
-        cpx_block_structure = self.driver.find_elements(by=By.CLASS_NAME, value="cpx-block-structure")[0]
-        cpx_module_name = cpx_block_structure.find_elements(by=By.CLASS_NAME, value="cpx-module-name")[-1]
+        cpx_block_structure = self.driver.find_elements(
+            by=By.CLASS_NAME, value="cpx-block-structure"
+        )[0]
+        cpx_module_name = cpx_block_structure.find_elements(
+            by=By.CLASS_NAME, value="cpx-module-name"
+        )[-1]
         cpx_module_name.click()
         self.sleep()
-
-        # self.driver.switch_to.window(self.driver.window_handles[1])
-        # x_path = "/html/body/div[1]/div[1]/div/div[2]/div[2]/div[1]/ul/li[2]/div[1]"
-        # self.click_button(x_path)
 
     @before_execution(total_timeout=5)
     def execute_course(self):
@@ -202,7 +183,6 @@ class ProtectiveDrivingCourse(BaseClicker):
             self.loger.error(f"__click_next_question {e}")
 
     def __select_answer(self, correct_answer, question):
-        # TODO: Поиск правильного ответа
         answer_elements = self._get_web_elements(question, "wtq-item-table")
         for answer in answer_elements:
             answer_text = self._get_text_from_element(answer, "wtq-item-text-cell-main")

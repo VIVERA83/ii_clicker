@@ -2,8 +2,13 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Type, Union
 
+from store.clicker.help import temp_db
+
 TRAINING_TYPE = Union[
-    Type["DriverCourseType"], Type["DispatcherCourseType"], Type["MentorCourseType"]
+    Type["RatingCourseType"],
+    Type["DriverCourseType"],
+    Type["DispatcherCourseType"],
+    Type["MentorCourseType"]
 ]
 
 
@@ -85,14 +90,30 @@ class MentorCourseType:
 
 class TrainingCourse:
 
-    def __init__(self, training_type: TRAINING_TYPE, courses: list[CourseType]):
+    def __init__(self, training_type: TRAINING_TYPE, course: CourseType):
         self.mode = "course"
         self.training_type = training_type
-        self.courses = courses
+        self.course = course
 
-    def get_params(self, course: CourseType) -> dict:
+    def get_questions(self) -> dict[str, str]:
+        return temp_db.get(self.course.name, {})
+
+    def get_params(self) -> dict:
         return {
             "mode": self.mode,
             "doc_id": self.training_type.doc_id,
-            "object_id": getattr(self.training_type, course.name),
+            "object_id": getattr(self.training_type, self.course.name),
         }
+
+
+if __name__ == '__main__':
+    from icecream import ic
+
+    ic.includeContext = True
+
+    eco_small = CourseType.protective_driving
+
+    t = TrainingCourse(DriverCourseType, eco_small)
+
+    ic(t.get_params())
+    ic(t.get_questions())
