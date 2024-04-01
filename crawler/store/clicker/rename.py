@@ -5,6 +5,7 @@ from time import sleep
 from typing import Any
 
 from fake_useragent import UserAgent
+from icecream import ic
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -19,16 +20,16 @@ class BaseClicker(abc.ABC):
     MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
     def __init__(
-        self,
-        login: str,
-        password: str,
-        course: str,
-        questions: dict[str, str],
-        min_sec: int = 3,
-        max_sec: int = 6,
-        min_sec_answer: int = 15,
-        max_sec_answer: int = 20,
-        logger: Logger = None,
+            self,
+            login: str,
+            password: str,
+            course: str,
+            questions: dict[str, str],
+            min_sec: int = 3,
+            max_sec: int = 6,
+            min_sec_answer: int = 15,
+            max_sec_answer: int = 20,
+            logger: Logger = None,
     ):
         self.loger = logger or getLogger(name=__name__)
         self.login = login
@@ -45,14 +46,14 @@ class BaseClicker(abc.ABC):
     @staticmethod
     def get_driver_options() -> Options:
         options = webdriver.ChromeOptions()
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--headless=new")
-        options.add_argument("--start-maximized")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--allow-running-insecure-content")
+        # options.add_argument("--window-size=1920,1080")
+        # options.add_argument("--no-sandbox")
+        # options.add_argument("--disable-gpu")
+        # options.add_argument("--disable-dev-shm-usage")
+        # options.add_argument("--headless=new")
+        # options.add_argument("--start-maximized")
+        # options.add_argument("--ignore-certificate-errors")
+        # options.add_argument("--allow-running-insecure-content")
         user_agent = UserAgent(browsers=["chrome"]).getRandom.get("useragent")
         options.add_argument(f"user-agent={user_agent}")
         return options
@@ -105,45 +106,51 @@ class ProtectiveDrivingCourse(BaseClicker):
     COURSE_PARAMS = {
         "mode": "course",
         "doc_id": "6929760816126312392",
-        "object_id": "6961398061758971672",
+        "object_id": "6961398061758971672" #"6924645368353934140",  # "6961398061758971672",
     }
 
     def init_course(self):
-        self.__click_rating_protective_driving_button()
-        self.__click_begin_rating_protective_driving_button()
-        self.__click_resume_rating_protective_driving_button()
-        self.__click_start_rating_protective_driving_button()
-        self._execute_course()
+        self.go_to_course()
+        self.click_start_course_button()
+        self.click_resume_course_button()
+        self.click_start_test()
+        self.execute_course()
 
     @before_execution()
-    def __click_rating_protective_driving_button(self):
+    def go_to_course(self):
         url = self.create_link(self.MAGNUM_URL, self.COURSE_PARAMS)
         self.driver.get(url)
         self.sleep()
 
     @before_execution()
-    def __click_begin_rating_protective_driving_button(self):
+    def click_start_course_button(self):
         x_path = '//*[@id="buttons_area"]/button[1]'
         self.click_button(x_path)
 
     @before_execution()
-    def __click_resume_rating_protective_driving_button(self):
+    def click_resume_course_button(self):
         x_path = '//*[@id="buttons_area"]/button'
         self.click_button(x_path)
 
-    @before_execution()
-    def click_start_rating_protective_driving_button(self):
-        x_path = '//*[@id="buttons_area"]/button[2]'
-        self.click_button(x_path)
+    # @before_execution()
+    # def click_start_rating_protective_driving_button(self):
+    #     x_path = '//*[@id="buttons_area"]/button[2]'
+    #     self.click_button(x_path)
 
     @before_execution(total_timeout=10)
-    def __click_start_rating_protective_driving_button(self):
+    def click_start_test(self):
         self.driver.switch_to.window(self.driver.window_handles[1])
-        x_path = "/html/body/div[1]/div[1]/div/div[2]/div[2]/div[1]/ul/li[2]/div[1]"
-        self.click_button(x_path)
+        cpx_block_structure = self.driver.find_elements(by=By.CLASS_NAME, value="cpx-block-structure")[0]
+        cpx_module_name = cpx_block_structure.find_elements(by=By.CLASS_NAME, value="cpx-module-name")[-1]
+        cpx_module_name.click()
+        self.sleep()
+
+        # self.driver.switch_to.window(self.driver.window_handles[1])
+        # x_path = "/html/body/div[1]/div[1]/div/div[2]/div[2]/div[1]/ul/li[2]/div[1]"
+        # self.click_button(x_path)
 
     @before_execution(total_timeout=5)
-    def _execute_course(self):
+    def execute_course(self):
         self.loger.info("Начат курс")
         frame_id = "cp_course_container"
         wait = WebDriverWait(self.driver, self.timeout)
@@ -171,7 +178,7 @@ class ProtectiveDrivingCourse(BaseClicker):
     def __answer_questions(self, question_elements: list[WebElement]):
         for index, question in enumerate(question_elements):
             if question_text := self._get_text_from_element(
-                question, "wtq-q-question-text"
+                    question, "wtq-q-question-text"
             ):
                 self.loger.info(f"question {index}: {question_text}")
                 self.sleep(self.min_sec_answer, self.max_sec_answer)
@@ -185,10 +192,10 @@ class ProtectiveDrivingCourse(BaseClicker):
     def __click_next_question(self, question):
         try:
             if button_element := self._get_web_elements(
-                question, value="wtq-footer-cell-main"
+                    question, value="wtq-footer-cell-main"
             ):
                 if button := self._get_web_elements(
-                    button_element[0], "button", By.TAG_NAME
+                        button_element[0], "button", By.TAG_NAME
                 )[0]:
                     button.click()
         except Exception as e:
@@ -219,7 +226,7 @@ class ProtectiveDrivingCourse(BaseClicker):
 
     @staticmethod
     def _get_web_elements(
-        element: WebElement, value: str, by: str = By.CLASS_NAME
+            element: WebElement, value: str, by: str = By.CLASS_NAME
     ) -> list[WebElement]:
         element = element.find_elements(by=by, value=value)
         return element or []
