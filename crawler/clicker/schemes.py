@@ -1,10 +1,7 @@
 from enum import Enum
 
 from pydantic import BaseModel, Field
-
-from store.clicker.courses import (
-    CourseType,
-)
+from store.clicker.courses import CourseType
 
 
 class CourseTypeEnum(Enum):
@@ -18,7 +15,7 @@ class CourseSchema(BaseModel):
     login: str = Field(description="Your login", example="ivanov")
     password: str = Field(description="Your password", example="mypass")
     course_type: CourseTypeEnum
-    course: list[CourseType] = Field(
+    courses: list[CourseType] = Field(
         description="Your course",
         example=[
             CourseType.eco_small,
