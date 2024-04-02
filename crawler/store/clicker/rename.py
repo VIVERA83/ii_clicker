@@ -1,6 +1,7 @@
+import asyncio
 from logging import Logger, getLogger
 from random import randint
-from time import sleep
+
 
 from fake_useragent import UserAgent
 from selenium import webdriver
@@ -55,41 +56,41 @@ class CourseClicker:
         options.add_argument(f"user-agent={user_agent}")
         return options
 
-    def start_course(self):
+    async def start_course(self):
         self.driver.get(self.START_URL)
-        self.sleep()
-        self._click_greetings_button()
-        self._click_login_button()
-        self.init_course()
+        await self.sleep()
+        await self._click_greetings_button()
+        await self._click_login_button()
+        await self.init_course()
 
-    def set_value_input(self, x_path, value):
+    async def set_value_input(self, x_path, value):
         input_field = self.driver.find_element(by=By.XPATH, value=x_path)
         input_field.send_keys(value)
-        self.sleep()
+        await self.sleep()
 
-    def click_button(self, x_path) -> WebElement:
+    async def click_button(self, x_path) -> WebElement:
         button = self.driver.find_element(by=By.XPATH, value=x_path)
         button.click()
-        self.sleep()
+        await self.sleep()
         return button
 
     @before_execution()
-    def _click_greetings_button(self):
+    async def _click_greetings_button(self):
         x_path = '//*[@id="root"]/div[1]/div/div/div[1]/button'
-        self.click_button(x_path)
+        await self.click_button(x_path)
         self.loger.info("Начальная страница пройдена")
 
     # @before_execution()
-    def _click_login_button(self):
-        self.set_value_input('//*[@id="username"]', self.login)
-        self.set_value_input('//*[@id="password"]', self.password)
-        self.click_button('//*[@id="submit-btn"]')
+    async def _click_login_button(self):
+        await self.set_value_input('//*[@id="username"]', self.login)
+        await self.set_value_input('//*[@id="password"]', self.password)
+        await self.click_button('//*[@id="submit-btn"]')
         self.loger.info("Авторизация пройдена")
 
-    def sleep(self, min_sec: int = None, max_sec: int = None):
+    async def sleep(self, min_sec: int = None, max_sec: int = None):
         min_sec = min_sec or self.min_sec
         max_sec = max_sec or self.max_sec
-        sleep(randint(min_sec, max_sec))
+        await asyncio.sleep(randint(min_sec, max_sec))
 
     def create_link(self):
         return (
@@ -100,32 +101,32 @@ class CourseClicker:
             )
         )
 
-    def init_course(self):
+    async def init_course(self):
         self.questions = self.training_course.get_questions()
-        self.go_to_course()
-        self.click_start_course_button()
-        self.click_resume_course_button()
-        self.click_start_test()
-        self.execute_course()
+        await self.go_to_course()
+        await self.click_start_course_button()
+        await self.click_resume_course_button()
+        await self.click_start_test()
+        await self.execute_course()
 
     @before_execution()
-    def go_to_course(self):
+    async def go_to_course(self):
         url = self.create_link()
         self.driver.get(url)
-        self.sleep()
+        await self.sleep()
 
     @before_execution()
-    def click_start_course_button(self):
+    async def click_start_course_button(self):
         x_path = '//*[@id="buttons_area"]/button[1]'
-        self.click_button(x_path)
+        await self.click_button(x_path)
 
     @before_execution()
-    def click_resume_course_button(self):
+    async def click_resume_course_button(self):
         x_path = '//*[@id="buttons_area"]/button'
-        self.click_button(x_path)
+        await self.click_button(x_path)
 
     @before_execution(total_timeout=10)
-    def click_start_test(self):
+    async def click_start_test(self):
         self.driver.switch_to.window(self.driver.window_handles[1])
         cpx_block_structure = self.driver.find_elements(
             by=By.CLASS_NAME, value="cpx-block-structure"
@@ -134,19 +135,19 @@ class CourseClicker:
             by=By.CLASS_NAME, value="cpx-module-name"
         )[-1]
         cpx_module_name.click()
-        self.sleep()
+        await self.sleep()
 
     @before_execution(total_timeout=5)
-    def execute_course(self):
+    async def execute_course(self):
         self.loger.info("Начат курс")
         frame_id = "cp_course_container"
         wait = WebDriverWait(self.driver, self.timeout)
         wait.until(ec.frame_to_be_available_and_switch_to_it(frame_id))
 
         question_elements = self.__get_question_elements()
-        self.__answer_questions(question_elements)
+        await self.__answer_questions(question_elements)
         self.driver.close()
-        self.sleep()
+        await self.sleep()
         self.__close_course()
         self.loger.info("Курс пройден")
 
@@ -162,13 +163,13 @@ class CourseClicker:
         )
         return question_elements
 
-    def __answer_questions(self, question_elements: list[WebElement]):
+    async def __answer_questions(self, question_elements: list[WebElement]):
         for index, question in enumerate(question_elements):
             if question_text := self._get_text_from_element(
                 question, "wtq-q-question-text"
             ):
                 self.loger.info(f"question {index}: {question_text}")
-                self.sleep(self.min_sec_answer, self.max_sec_answer)
+                await self.sleep(self.min_sec_answer, self.max_sec_answer)
 
                 if correct_answer := self.questions.get(question_text):
                     self.__select_answer(correct_answer, question)

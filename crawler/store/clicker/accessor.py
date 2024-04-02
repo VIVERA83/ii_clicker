@@ -28,6 +28,7 @@ class ClickerAccessor(BaseAccessor):
     ):
         type_course = self.courses.get(course_type.value)
         for course in courses:
+            self.logger.info(f"Start {course} course, user: {login}")
             clicker = CourseClicker(
                 login=login,
                 password=password,
@@ -37,9 +38,9 @@ class ClickerAccessor(BaseAccessor):
                 logger=self.logger,
             )
             try:
-                clicker.start_course()
+                await clicker.start_course()
             except Exception as ex:
                 raise Exception(ex.args[0])
             finally:
                 clicker.driver.quit()
-        self.logger.info("Start protective driving course")
+        self.logger.info(f"Clicker finished, user: {login}")
