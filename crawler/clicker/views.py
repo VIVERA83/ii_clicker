@@ -1,7 +1,5 @@
 from typing import Any
 
-from icecream import ic
-
 from base.schemas import OkSchema
 from clicker.schemes import CourseSchema, CourseTypeEnum
 from core.components import Request
@@ -10,7 +8,6 @@ from fastapi import APIRouter
 from store.clicker.courses import (
     TrainingCourse,
     RatingCourseType,
-    CourseType,
     DriverCourseType,
     DispatcherCourseType,
     MentorCourseType,
@@ -35,10 +32,7 @@ async def auto_scroll_course(request: "Request", course: CourseSchema) -> Any:
         CourseTypeEnum.mentor.value: MentorCourseType,
         CourseTypeEnum.rating.value: RatingCourseType,
     }.get(course.course_type.value)
-    ic(course.course_type)
     for c in course.course:
-        ic(c)
-        ic(course_type)
         clicker = CourseClicker(
             course.login,
             course.password,

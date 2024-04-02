@@ -18,15 +18,15 @@ class CourseClicker:
     MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
     def __init__(
-            self,
-            login: str,
-            password: str,
-            training_course: TrainingCourse,
-            min_sec: int = 3,
-            max_sec: int = 6,
-            min_sec_answer: int = 15,
-            max_sec_answer: int = 20,
-            logger: Logger = None,
+        self,
+        login: str,
+        password: str,
+        training_course: TrainingCourse,
+        min_sec: int = 3,
+        max_sec: int = 6,
+        min_sec_answer: int = 15,
+        max_sec_answer: int = 20,
+        logger: Logger = None,
     ):
         self.loger = logger or getLogger(name=__name__)
         self.login = login
@@ -93,11 +93,11 @@ class CourseClicker:
 
     def create_link(self):
         return (
-                self.MAGNUM_URL
-                + "?"
-                + "&".join(
-            [f"{k}={v}" for k, v in self.training_course.get_params().items()]
-        )
+            self.MAGNUM_URL
+            + "?"
+            + "&".join(
+                [f"{k}={v}" for k, v in self.training_course.get_params().items()]
+            )
         )
 
     def init_course(self):
@@ -165,7 +165,7 @@ class CourseClicker:
     def __answer_questions(self, question_elements: list[WebElement]):
         for index, question in enumerate(question_elements):
             if question_text := self._get_text_from_element(
-                    question, "wtq-q-question-text"
+                question, "wtq-q-question-text"
             ):
                 self.loger.info(f"question {index}: {question_text}")
                 self.sleep(self.min_sec_answer, self.max_sec_answer)
@@ -179,10 +179,10 @@ class CourseClicker:
     def __click_next_question(self, question):
         try:
             if button_element := self._get_web_elements(
-                    question, value="wtq-footer-cell-main"
+                question, value="wtq-footer-cell-main"
             ):
                 if button := self._get_web_elements(
-                        button_element[0], "button", By.TAG_NAME
+                    button_element[0], "button", By.TAG_NAME
                 )[0]:
                     button.click()
         except Exception as e:
@@ -208,7 +208,8 @@ class CourseClicker:
 
         # TODO: delete this code after fix api
         for el in answer_elements:
-            print(f"{self._get_text_from_element(el, "wtq-item-text-cell-main")}")
+            text = self._get_text_from_element(el, "wtq-item-text-cell-main")
+            print(text)
         # TODO stop
 
     @staticmethod
@@ -217,7 +218,7 @@ class CourseClicker:
 
     @staticmethod
     def _get_web_elements(
-            element: WebElement, value: str, by: str = By.CLASS_NAME
+        element: WebElement, value: str, by: str = By.CLASS_NAME
     ) -> list[WebElement]:
         element = element.find_elements(by=by, value=value)
         return element or []
