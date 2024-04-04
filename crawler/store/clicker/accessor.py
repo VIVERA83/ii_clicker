@@ -8,7 +8,7 @@ from store.clicker.courses import (
     RatingCourseType,
     TrainingCourse,
 )
-from store.clicker.rename import CourseClicker
+from store.clicker.clicker import CourseClicker
 
 
 class ClickerAccessor(BaseAccessor):
@@ -20,11 +20,11 @@ class ClickerAccessor(BaseAccessor):
     }
 
     async def start_clicker(
-        self,
-        login: str,
-        password: str,
-        course_type: CourseTypeEnum,
-        courses: list[CourseType],
+            self,
+            login: str,
+            password: str,
+            course_type: CourseTypeEnum,
+            courses: list[CourseType],
     ):
         type_course = self.courses.get(course_type.value)
         for course in courses:

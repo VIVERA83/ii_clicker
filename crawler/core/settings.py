@@ -139,12 +139,3 @@ class PostgresSettings(Base):
             port=self.postgres_port,
             db=self.postgres_db,
         )
-
-
-class SchedulerSettings(Base):
-    worker: int = 1
-    queue_size: int = 10
-
-
-class PollerSettings(Base):
-    timeout: int = 1

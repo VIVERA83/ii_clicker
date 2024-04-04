@@ -105,15 +105,3 @@ class TrainingCourse:
             "object_id": getattr(self.training_type, self.course.name),
         }
 
-
-if __name__ == "__main__":
-    from icecream import ic
-
-    ic.includeContext = True
-
-    eco_small = CourseType.protective_driving
-
-    t = TrainingCourse(DriverCourseType, eco_small)
-
-    ic(t.get_params())
-    ic(t.get_questions())

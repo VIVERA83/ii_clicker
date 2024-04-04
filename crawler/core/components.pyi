@@ -24,7 +24,6 @@ class Application(FastAPI):
     settings: AppSettings
     logger: logging.Logger
     docs_url: str
-    postgres: Postgres
 
 class Request(FastAPIRequest):
     """Request overrides.
