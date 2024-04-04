@@ -28,7 +28,7 @@ class ClickerAccessor(BaseAccessor):
     ):
         type_course = self.courses.get(course_type.value)
         for course in courses:
-            self.logger.info(f"Start {course} course, user: {login}")
+            self.logger.info(f"Start {course.value} course, user: {login}")
             clicker = CourseClicker(
                 login=login,
                 password=password,

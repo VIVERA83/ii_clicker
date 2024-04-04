@@ -2,7 +2,6 @@ import asyncio
 from logging import Logger, getLogger
 from random import randint
 
-
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
