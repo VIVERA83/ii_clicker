@@ -104,4 +104,3 @@ class TrainingCourse:
             "doc_id": self.training_type.doc_id,
             "object_id": getattr(self.training_type, self.course.name),
         }
-

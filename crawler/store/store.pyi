@@ -1,7 +1,6 @@
 from core.components import Application
 from store.clicker.accessor import ClickerAccessor
 
-
 class Store:
     """Store, data car and working with it."""
 
