@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Type, Union
 
-from store.clicker.help import temp_db
+from clicker.help import temp_db
 
 TRAINING_TYPE = Union[
     Type["RatingCourseType"],

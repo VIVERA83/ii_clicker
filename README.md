@@ -26,3 +26,5 @@ docker run -it --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 https://www.rabbitmq.com/tutorials
 
 pip install aio-pika
+http://<i>{node-hostname}</i>:15672/
+http://localhost:15672/

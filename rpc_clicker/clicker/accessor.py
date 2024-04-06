@@ -1,5 +1,6 @@
 from base.base_accessor import BaseAccessor
 from clicker.schemes import CourseTypeEnum
+from store.clicker.clicker import CourseClicker
 from store.clicker.courses import (
     CourseType,
     DispatcherCourseType,
@@ -8,7 +9,6 @@ from store.clicker.courses import (
     RatingCourseType,
     TrainingCourse,
 )
-from store.clicker.clicker import CourseClicker
 
 
 class ClickerAccessor(BaseAccessor):
