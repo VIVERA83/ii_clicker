@@ -17,3 +17,14 @@ clicker_route = APIRouter(tags=["Clicker"])
 async def auto_scroll_course(request: "Request", course: CourseSchema) -> Any:
     await request.app.store.clicker.start_clicker(**course.model_dump())
     return OkSchema(message="Course completed successfully")
+
+
+@clicker_route.get(
+    "/rabbit",
+    summary="test rabbit",
+    description="Complete the set course in automatic mode",
+    response_model=OkSchema,
+)
+async def auto_scroll_course(request: "Request", string: str) -> Any:
+    request.app.logger.info(string)
+    return OkSchema(message="Course completed successfully")
