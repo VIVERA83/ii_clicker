@@ -2,6 +2,8 @@ import asyncio
 from logging import Logger, getLogger
 from random import randint
 
+from clicker.backoff import before_execution
+from clicker.courses import TrainingCourse
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -9,9 +11,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-
-from clicker.backoff import before_execution
-from clicker.courses import TrainingCourse
 
 
 class CourseClicker:

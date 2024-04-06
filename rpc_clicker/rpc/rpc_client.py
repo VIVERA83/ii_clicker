@@ -59,21 +59,11 @@ class FibonacciRpcClient:
 
 async def main() -> None:
     fibonacci_rpc = await FibonacciRpcClient().connect()
-    print(" [x] Requesting fib(30)")
-    data = {
-        "login": "sergievskiy_an",
-        "password": "QQQQqqqq5555",
-        "course_type": "Z"}
+    data = {"login": "sergievskiy_an", "password": "QQQQqqqq5555", "course_type": "z"}
     await asyncio.gather(
         fibonacci_rpc.call(**data),
     )
 
-    # response = await fibonacci_rpc.call(30)
-    # print(f" [.] Got {response!r}")
-    # response = await fibonacci_rpc.call(32)
-    # print(f" [.] Got {response!r}")
-    # response = await fibonacci_rpc.call(35)
-    # print(f" [.] Got {response!r}")
 
 
 if __name__ == "__main__":
