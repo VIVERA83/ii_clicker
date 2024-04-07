@@ -1,6 +1,7 @@
 import os
 from typing import Literal
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
@@ -48,3 +49,30 @@ class ClickerSettings(Base):
     max_sec: int = 6
     min_sec_answer: int = 15
     max_sec_answer: int = 20
+
+
+class RabbitMQSettings(Base):
+    rabbit_user: str
+    rabbit_password: SecretStr
+    rabbit_host: str
+    rabbit_port: int
+
+    def dsn(self, show_secret: bool = False) -> str:
+        """Returns the connection URL as a string.
+
+        Args:
+            show_secret (bool, optional): Whether to show the secret. Defaults to False.
+
+        Returns:
+            str: The connection URL.
+        """
+        return "amqp://{user}:{password}@{host}:{port}/".format(
+            user=self.rabbit_user,
+            password=(
+                self.rabbit_password.get_secret_value()
+                if show_secret
+                else self.rabbit_password
+            ),
+            host=self.rabbit_host,
+            port=self.rabbit_port,
+        )

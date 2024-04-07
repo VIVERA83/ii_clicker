@@ -154,7 +154,7 @@ async def execute_rpc_action(
         return json.dumps(
             Result(
                 status="ERROR",
-                course=get_course_name_by_type(course_type),
+                course=course_type,
                 result=[],
                 message="Неизвестный тип курса",
             ).to_dict()

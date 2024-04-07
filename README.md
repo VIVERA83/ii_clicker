@@ -1,6 +1,14 @@
 # ii_crauler
 
 
+```bash
+docker build -t rpc_clicker .
+```
+
+```bash
+docker run --rm --name ii_rpc_clicker rpc_clicker       
+```
+
 it 
 
 
