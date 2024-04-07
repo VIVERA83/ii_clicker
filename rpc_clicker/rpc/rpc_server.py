@@ -39,7 +39,7 @@ class RPCServer:
 
                     async with message.process(requeue=False):
                         try:
-                            assert message.reply_to is not None
+                            assert message.reply_to is not None, f"Bad message {message}"
                             response = await self._execute_action(message.body)
                         except Exception as e:
                             self.logger.exception("Processing error")
