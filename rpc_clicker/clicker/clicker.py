@@ -55,12 +55,12 @@ class CourseClicker:
         options.add_argument(f"user-agent={user_agent}")
         return options
 
-    async def start_course(self):
+    async def start_course(self) -> str:
         self.driver.get(self.START_URL)
         await self.sleep()
         await self._click_greetings_button()
         await self._click_login_button()
-        await self.init_course()
+        return await self.init_course()
 
     async def set_value_input(self, x_path, value):
         input_field = self.driver.find_element(by=By.XPATH, value=x_path)
@@ -100,13 +100,13 @@ class CourseClicker:
             )
         )
 
-    async def init_course(self):
+    async def init_course(self) -> str:
         self.questions = self.training_course.get_questions()
         await self.go_to_course()
         await self.click_start_course_button()
         await self.click_resume_course_button()
         await self.click_start_test()
-        await self.execute_course()
+        return await self.execute_course()
 
     @before_execution()
     async def go_to_course(self):
@@ -137,7 +137,7 @@ class CourseClicker:
         await self.sleep()
 
     @before_execution(total_timeout=5)
-    async def execute_course(self):
+    async def execute_course(self) -> str:
         self.loger.info("Начат курс")
         frame_id = "cp_course_container"
         wait = WebDriverWait(self.driver, self.timeout)
@@ -145,10 +145,22 @@ class CourseClicker:
 
         question_elements = self.__get_question_elements()
         await self.__answer_questions(question_elements)
+        await self.sleep()
+        result = self.__get_result()
         self.driver.close()
         await self.sleep()
         self.__close_course()
         self.loger.info("Курс пройден")
+        return result
+
+    def __get_result(self):
+        text = ""
+        try:
+            wtq_final = self.driver.find_element(By.CLASS_NAME, "wtq-final")
+            text = self._get_text_from_element(wtq_final, "wtq-final-results")
+        except Exception:
+            self.loger.info("no final results")
+        return text
 
     def __close_course(self):
         self.driver.switch_to.window(self.driver.window_handles[0])

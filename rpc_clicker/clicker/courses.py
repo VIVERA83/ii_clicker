@@ -30,6 +30,12 @@ class CourseType(Enum):
     final_test_mentor = "Итоговый тест водителя наставника"
 
 
+@dataclass
+class Course:
+    type: TRAINING_TYPE
+    courses: list[CourseType]
+
+
 # обучение по рейтингу
 @dataclass
 class RatingCourseType:

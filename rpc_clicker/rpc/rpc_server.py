@@ -19,11 +19,11 @@ class RPCServer:
     queue: AbstractQueue
 
     def __init__(
-        self, program, logger: logging.Logger = logging.getLogger(__name__)
+        self, action, logger: logging.Logger = logging.getLogger(__name__)
     ) -> None:
         self.dns = "amqp://guest:guest@localhost/"
         self.queue_name = "rpc_queue"
-        self.program = program
+        self.action = action
         self.logger = logger
 
     async def start(self) -> None:
@@ -38,7 +38,7 @@ class RPCServer:
                     async with message.process(requeue=False):
                         try:
                             assert message.reply_to is not None
-                            response = await self._execute_program(message.body)
+                            response = await self._execute_action(message.body)
                         except Exception as e:
                             self.logger.exception(
                                 "Processing error for message ",
@@ -48,9 +48,10 @@ class RPCServer:
                         await self._reply_to(message, str(response).encode("utf-8"))
 
         except asyncio.CancelledError:
-            print(" [x] Canceled")
+            self.logger.info("RPC server canceled")
         finally:
             await self.connection.close()
+        self.logger.info("RPC server stopped")
 
     async def _reply_to(
         self, message: AbstractIncomingMessage, response: bytes
@@ -71,6 +72,6 @@ class RPCServer:
         self.queue = await self.channel.declare_queue(self.queue_name)
         return self
 
-    async def _execute_program(self, params: bytes) -> bytes:
+    async def _execute_action(self, params: bytes) -> bytes:
         data = json.loads(params.decode("utf-8"))
-        return await self.program(**data)
+        return await self.action(**data)
