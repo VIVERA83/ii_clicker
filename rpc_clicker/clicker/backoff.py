@@ -18,7 +18,6 @@ def delta_time() -> float:
 
 def before_execution(
     total_timeout=10,
-    request_timeout: int = 3,
     logger: logging.Logger = logging.getLogger(name="before_execution"),
     raise_exception: bool = True,
 ) -> Any:
@@ -71,11 +70,3 @@ def before_execution(
         return inner
 
     return func_wrapper
-
-
-def create_link(params: dict[str, Any]):
-    return "?" + "&".join([f"{k}={v}" for k, v in params.items()])
-
-
-if __name__ == "__main__":
-    print(create_link({"a": 1, "b": 2}))
