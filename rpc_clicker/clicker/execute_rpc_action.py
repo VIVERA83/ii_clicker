@@ -1,11 +1,10 @@
 import json
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 from typing import Literal
 
 from clicker.clicker import CourseClicker
 from clicker.courses import (
     Course,
-    CourseResult,
     CourseType,
     DispatcherCourseType,
     DriverCourseType,
@@ -14,8 +13,20 @@ from clicker.courses import (
     TrainingCourse,
 )
 from core.logger import setup_logging
+from core.settings import ClickerSettings
 
 COURSE_TYPE = Literal["cpd", "epd", "etd", "d", "m", "z", "ce", "ee"]
+
+
+@dataclass
+class Result:
+    status: Literal["OK", "ERROR"] = "Ok"
+    course: str = ""
+    result: list = field(default_factory=list)
+    message: str = "Успешно"
+
+    def to_dict(self):
+        return asdict(self)
 
 
 def get_courses_by_type(course_type: COURSE_TYPE) -> Course:
@@ -118,28 +129,33 @@ async def execute_rpc_action(
     Returns:
     - None
     """
-    result = {
-        "status": "OK",
-        "course": get_course_name_by_type(course_type),
-        "result": [],
-    }
+    result = Result()
+    setting = ClickerSettings()
     if course := get_courses_by_type(course_type):
         for c in course.courses:
             clicker = CourseClicker(
                 login=login,
                 password=password,
                 training_course=TrainingCourse(course.type, c),
-                min_sec_answer=5,
-                max_sec_answer=10,
                 logger=setup_logging(),
+                min_sec=setting.min_sec,
+                max_sec=setting.min_sec,
+                min_sec_answer=setting.min_sec_answer,
+                max_sec_answer=setting.max_sec_answer,
             )
             try:
-                result["result"].append({c.value: await clicker.start_course()})
+                result.result.append({c.value: await clicker.start_course()})
             except Exception as ex:
                 raise Exception(ex.args[0])
             finally:
                 clicker.driver.quit()
-
-        return json.dumps(result)
+        return json.dumps(result.to_dict())
     else:
-        return json.dumps({"error": "Курс не найден"})
+        return json.dumps(
+            Result(
+                status="ERROR",
+                course=get_course_name_by_type(course_type),
+                result=[],
+                message="Неизвестный тип курса",
+            ).to_dict()
+        )

@@ -41,3 +41,10 @@ class LogSettings(Base):
     level: LOG_LEVEL
     guru: bool
     traceback: bool
+
+
+class ClickerSettings(Base):
+    min_sec: int = 3
+    max_sec: int = 6
+    min_sec_answer: int = 15
+    max_sec_answer: int = 20

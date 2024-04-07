@@ -33,8 +33,8 @@ class FibonacciRpcClient:
         if message.correlation_id is None:
             print(f"Bad message {message!r}")
             return
-
-        ic(json.loads(message.body))
+        if message.body:
+            ic(json.loads(message.body))
 
         future: asyncio.Future = self.futures.pop(message.correlation_id)
         future.set_result(message.body)
@@ -59,11 +59,11 @@ class FibonacciRpcClient:
         return await future
 
 
-async def main() -> None:
+async def main():
     fibonacci_rpc = await FibonacciRpcClient().connect()
-    # data = {"login": "sergievskiy_an", "password": "QQQQqqqq5555", "course_type": "z"}
-    data = {"login": "fedorov_dd", "password": "FFFFffff1111", "course_type": "z"}
-    await asyncio.gather(
+    data = {"login": "sergievskiy_an", "password": "QQQQqqqq5555", "course_type": "z"}
+    # data = {"login": "fedorov_dd", "password": "FFFFffff1111", "course_type": "cpd"}
+    return await asyncio.gather(
         fibonacci_rpc.call(**data),
     )
 
