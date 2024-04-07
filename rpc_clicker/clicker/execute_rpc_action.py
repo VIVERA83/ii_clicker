@@ -1,9 +1,11 @@
 import json
+from dataclasses import asdict
 from typing import Literal
 
 from clicker.clicker import CourseClicker
 from clicker.courses import (
     Course,
+    CourseResult,
     CourseType,
     DispatcherCourseType,
     DriverCourseType,
@@ -89,6 +91,19 @@ def get_courses_by_type(course_type: COURSE_TYPE) -> Course:
     }.get(course_type, None)
 
 
+def get_course_name_by_type(course_type: COURSE_TYPE) -> str:
+    return {
+        "cpd": "Программа Водитель-экспедитор С ПД",
+        "epd": "Программа Водитель-экспедитор E ПД",
+        "etd": "Программа Водитель-экспедитор E ТД",
+        "d": "Программа Водитель-диспетчер",
+        "m": "Программа Водитель наставник",
+        "z": "Программа Защитное вождение",
+        "ce": "Программа Эко вождение малый формат",
+        "ee": "Программа Эко вождение полный формат",
+    }.get(course_type, "Неизвестный тип курса")
+
+
 async def execute_rpc_action(
     login: str, password: str, course_type: COURSE_TYPE
 ) -> str:
@@ -103,7 +118,11 @@ async def execute_rpc_action(
     Returns:
     - None
     """
-    result = {}
+    result = {
+        "status": "OK",
+        "course": get_course_name_by_type(course_type),
+        "result": [],
+    }
     if course := get_courses_by_type(course_type):
         for c in course.courses:
             clicker = CourseClicker(
@@ -115,11 +134,12 @@ async def execute_rpc_action(
                 logger=setup_logging(),
             )
             try:
-                result.update({c.value: await clicker.start_course()})
+                result["result"].append({c.value: await clicker.start_course()})
             except Exception as ex:
                 raise Exception(ex.args[0])
             finally:
                 clicker.driver.quit()
+
         return json.dumps(result)
     else:
         return json.dumps({"error": "Курс не найден"})

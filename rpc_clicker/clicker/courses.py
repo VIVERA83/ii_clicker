@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Type, Union
 
@@ -34,6 +34,15 @@ class CourseType(Enum):
 class Course:
     type: TRAINING_TYPE
     courses: list[CourseType]
+
+
+@dataclass
+class CourseResult:
+    status: str
+    message: str
+
+    def to_dict(self) -> dict:
+        return asdict(self)
 
 
 # обучение по рейтингу

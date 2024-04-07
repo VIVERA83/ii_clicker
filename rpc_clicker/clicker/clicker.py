@@ -3,7 +3,7 @@ from logging import Logger, getLogger
 from random import randint
 
 from clicker.backoff import before_execution
-from clicker.courses import TrainingCourse
+from clicker.courses import CourseResult, TrainingCourse
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -43,19 +43,19 @@ class CourseClicker:
     @staticmethod
     def get_driver_options() -> Options:
         options = webdriver.ChromeOptions()
-        # options.add_argument("--window-size=1920,1080")
-        # options.add_argument("--no-sandbox")
-        # options.add_argument("--disable-gpu")
-        # options.add_argument("--disable-dev-shm-usage")
-        # options.add_argument("--headless=new")
-        # options.add_argument("--start-maximized")
-        # options.add_argument("--ignore-certificate-errors")
-        # options.add_argument("--allow-running-insecure-content")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--headless=new")
+        options.add_argument("--start-maximized")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--allow-running-insecure-content")
         user_agent = UserAgent(browsers=["chrome"]).getRandom.get("useragent")
         options.add_argument(f"user-agent={user_agent}")
         return options
 
-    async def start_course(self) -> str:
+    async def start_course(self) -> dict:
         self.driver.get(self.START_URL)
         await self.sleep()
         await self._click_greetings_button()
@@ -100,7 +100,7 @@ class CourseClicker:
             )
         )
 
-    async def init_course(self) -> str:
+    async def init_course(self) -> dict:
         self.questions = self.training_course.get_questions()
         await self.go_to_course()
         await self.click_start_course_button()
@@ -137,7 +137,7 @@ class CourseClicker:
         await self.sleep()
 
     @before_execution(total_timeout=5)
-    async def execute_course(self) -> str:
+    async def execute_course(self) -> dict:
         self.loger.info("Начат курс")
         frame_id = "cp_course_container"
         wait = WebDriverWait(self.driver, self.timeout)
@@ -153,14 +153,31 @@ class CourseClicker:
         self.loger.info("Курс пройден")
         return result
 
-    def __get_result(self):
-        text = ""
+    def __get_result(self) -> dict:
+        wtq_final_container = self.driver.find_elements(
+            By.CLASS_NAME, "wtq-final-container"
+        )[1]
+        return CourseResult(
+            status=self.__get_status_course(wtq_final_container),
+            message=self._get_text_from_element(
+                wtq_final_container, "wtq-final-results"
+            ),
+        ).to_dict()
+
+    def __get_status_course(self, web_element: WebElement) -> str:
         try:
-            wtq_final = self.driver.find_element(By.CLASS_NAME, "wtq-final")
-            text = self._get_text_from_element(wtq_final, "wtq-final-results")
-        except Exception:
-            self.loger.info("no final results")
-        return text
+            # наличие надписи "Тест успешно пройден"
+            if text := self._get_text_from_element(
+                web_element, "wtq-test-passed-string"
+            ):
+                return text
+            if text := self._get_text_from_element(
+                web_element, "wtq-test-failed-string"
+            ):
+                return text
+        except Exception as e:
+            self.loger.error(f"__get_status_course {e}")
+        return "error"
 
     def __close_course(self):
         self.driver.switch_to.window(self.driver.window_handles[0])
@@ -217,12 +234,12 @@ class CourseClicker:
             answer_elements[randint(0, count)], "wt-radio-spot-outer"
         )[0].click()
         self.loger.info(f"random answer")
+        self.__debug_log(answer_elements)
 
-        # TODO: delete this code after fix api
+    def __debug_log(self, answer_elements: list[WebElement]):
         for el in answer_elements:
             text = self._get_text_from_element(el, "wtq-item-text-cell-main")
-            print(text)
-        # TODO stop
+            self.loger.debug(text)
 
     @staticmethod
     def _get_text_from_element(element: WebElement, class_name: str) -> str:
