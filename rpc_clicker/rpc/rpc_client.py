@@ -61,6 +61,7 @@ class FibonacciRpcClient:
 
 async def main():
     fibonacci_rpc = await FibonacciRpcClient().connect()
+
     data = {"login": "sergievskiy_an", "password": "QQQQqqqq5555", "course_type": "z1"}
     # data = {"login": "fedorov_dd", "password": "FFFFffff1111", "course_type": "cpd"}
     return await asyncio.gather(
