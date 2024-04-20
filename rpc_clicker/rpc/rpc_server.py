@@ -12,6 +12,7 @@ from aio_pika.abc import (
 )
 
 from core.settings import RabbitMQSettings
+from rpc.dc import Response
 
 
 class RPCServer:
@@ -27,10 +28,11 @@ class RPCServer:
         self.queue_name = "rpc_queue"
         self.action = action
         self.logger = logger
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self._connect())
 
     async def start(self) -> None:
-        await self._connect()
-        self.logger.info("Start RPC server")
+        self.logger.info(f"{self.__class__.__name__} start.")
         try:
             async with self.queue.iterator() as queue_iterator:
                 message: AbstractIncomingMessage
@@ -43,15 +45,16 @@ class RPCServer:
                             response = await self._execute_action(message.body)
                         except Exception as e:
                             self.logger.exception("Processing error")
-                            await self._reply_to(message, str(e).encode("utf-8"))
+                            response = Response(status="ERROR", message=str(e))
+                            await self._reply_to(message, response.to_bytes())
                             continue
                         await self._reply_to(message, str(response).encode("utf-8"))
 
         except asyncio.CancelledError:
-            self.logger.info("RPC server canceled")
+            pass
         finally:
             await self.connection.close()
-        self.logger.info("RPC server stopped")
+        self.logger.info(f"{self.__class__.__name__} stop.")
 
     async def _reply_to(
         self, message: AbstractIncomingMessage, response: bytes

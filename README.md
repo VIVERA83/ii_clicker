@@ -1,5 +1,11 @@
 # ii_crauler
+______
+Запуск приложения:
+```bash
+cd rpc_clicker && python main.py
+```
 
+---
 
 ```bash
 docker build -t rpc_clicker .
