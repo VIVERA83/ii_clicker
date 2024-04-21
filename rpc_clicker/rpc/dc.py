@@ -9,7 +9,7 @@ class Response:
     message: str = "Успешно"
     result: list = field(default_factory=list)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return asdict(self)
 
     def to_bytes(self) -> bytes:
