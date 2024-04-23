@@ -16,4 +16,4 @@ def run_rpc():
     try:
         loop.run_until_complete(rpc_server.start())
     except KeyboardInterrupt:
-        logger.info("Interrupted by user")
+        logger.warning("RPC server stopped")
