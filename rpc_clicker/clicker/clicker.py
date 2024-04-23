@@ -13,10 +13,10 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from urllib.parse import urlparse
 
+from core.settings import ClickerSettings
+
 
 class CourseClicker:
-    START_URL = "https://tvoy.magnit.ru/"
-    MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
     def __init__(
             self,
@@ -29,6 +29,8 @@ class CourseClicker:
             max_sec_answer: int = 20,
             logger: Logger = None,
     ):
+        self.START_URL = ClickerSettings().start_url
+        self.MAGNUM_URL = ClickerSettings().magnum_url
         self.loger = logger or getLogger(name=__name__)
         self.login = login
         self.password = password

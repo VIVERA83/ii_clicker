@@ -49,6 +49,8 @@ class ClickerSettings(Base):
     max_sec: int = 6
     min_sec_answer: int = 15
     max_sec_answer: int = 20
+    start_url: str
+    magnum_url: str
 
 
 class RabbitMQSettings(Base):
