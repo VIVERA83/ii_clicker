@@ -11,6 +11,7 @@ from aio_pika.abc import (
     AbstractQueue,
 )
 
+from .backoff import before_execution
 from core.settings import RabbitMQSettings
 from rpc.dc import Response
 
@@ -22,7 +23,7 @@ class RPCServer:
     queue: AbstractQueue
 
     def __init__(
-        self, action, logger: logging.Logger = logging.getLogger(__name__)
+            self, action, logger: logging.Logger = logging.getLogger(__name__)
     ) -> None:
         self.settings = RabbitMQSettings()
         self.queue_name = "rpc_queue"
@@ -57,7 +58,7 @@ class RPCServer:
         self.logger.info(f"{self.__class__.__name__} stop.")
 
     async def _reply_to(
-        self, message: AbstractIncomingMessage, response: bytes
+            self, message: AbstractIncomingMessage, response: bytes
     ) -> None:
         await self.exchange.publish(
             Message(
@@ -69,7 +70,8 @@ class RPCServer:
         self.logger.debug(f" [x] Sent {response!r}")
 
     async def _connect(self) -> "RPCServer":
-        self.connection = await connect(self.settings.dsn(True))
+        self.connection = await before_execution(total_timeout=20,
+                                                 raise_exception=True)(connect)(self.settings.dsn(True))
         self.channel = await self.connection.channel()
         self.exchange = self.channel.default_exchange
         self.queue = await self.channel.declare_queue(self.queue_name)
