@@ -43,6 +43,10 @@ docker run -it --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 docker build -t vivera83/ii_magnum:1 .
 ```  
 
+```bash
+docker push vivera83/ii_magnum:1
+```  
+
 
 https://www.rabbitmq.com/tutorials
 
