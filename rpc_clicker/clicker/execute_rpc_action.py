@@ -129,7 +129,7 @@ async def execute_rpc_action(
     Returns:
     - None
     """
-    result = Result()
+    result = Result(course=get_course_name_by_type(course_type))
     setting = ClickerSettings()
     if course := get_courses_by_type(course_type):
         for c in course.courses:

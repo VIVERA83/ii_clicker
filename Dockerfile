@@ -12,8 +12,10 @@ ENV TRACEBACK="false"
 # Settings Clicker
 ENV MIN_SEC=3
 ENV MAX_SEC=6
-ENV MIN_SEC_ANSWER=2
-ENV MAX_SEC_ANSWER=4
+ENV MIN_SEC_ANSWER=15
+ENV MAX_SEC_ANSWER=45
+ENV START_URL="https://localhost/"
+ENV MAGNUM_URL="https://localhost/view_doc.html"
 
 # Settings for RabbitMQ
 ENV RABBIT_USER="guest"

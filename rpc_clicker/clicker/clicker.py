@@ -11,23 +11,26 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
+from urllib.parse import urlparse
+
+from core.settings import ClickerSettings
 
 
 class CourseClicker:
-    START_URL = "https://tvoy.magnit.ru/"
-    MAGNUM_URL = "https://magnum.magnit.ru/view_doc.html"
 
     def __init__(
-        self,
-        login: str,
-        password: str,
-        training_course: TrainingCourse,
-        min_sec: int = 3,
-        max_sec: int = 6,
-        min_sec_answer: int = 15,
-        max_sec_answer: int = 20,
-        logger: Logger = None,
+            self,
+            login: str,
+            password: str,
+            training_course: TrainingCourse,
+            min_sec: int = 3,
+            max_sec: int = 6,
+            min_sec_answer: int = 15,
+            max_sec_answer: int = 20,
+            logger: Logger = None,
     ):
+        self.START_URL = ClickerSettings().start_url
+        self.MAGNUM_URL = ClickerSettings().magnum_url
         self.loger = logger or getLogger(name=__name__)
         self.login = login
         self.password = password
@@ -60,7 +63,16 @@ class CourseClicker:
         await self.sleep()
         await self._click_greetings_button()
         await self._click_login_button()
-        return await self.init_course()
+        if self._check_auth():
+            self.loger.info("Авторизация прошла успешно")
+            return await self.init_course()
+        return CourseResult(
+            status="Forbidden",
+            message="Не удалось авторизоваться, проверьте правильность логина и пароля",
+        ).to_dict()
+
+    def _check_auth(self) -> bool:
+        return urlparse(self.driver.current_url).netloc == "tvoy.magnit.ru"
 
     async def set_value_input(self, x_path, value):
         input_field = self.driver.find_element(by=By.XPATH, value=x_path)
@@ -83,8 +95,9 @@ class CourseClicker:
     async def _click_login_button(self):
         await self.set_value_input('//*[@id="username"]', self.login)
         await self.set_value_input('//*[@id="password"]', self.password)
+        self.driver.find_element(By.NAME,"checkbox-agreement").click()
+        await self.sleep()
         await self.click_button('//*[@id="submit-btn"]')
-        self.loger.info("Авторизация пройдена")
 
     async def sleep(self, min_sec: int = None, max_sec: int = None):
         min_sec = min_sec or self.min_sec
@@ -93,11 +106,11 @@ class CourseClicker:
 
     def create_link(self):
         return (
-            self.MAGNUM_URL
-            + "?"
-            + "&".join(
-                [f"{k}={v}" for k, v in self.training_course.get_params().items()]
-            )
+                self.MAGNUM_URL
+                + "?"
+                + "&".join(
+            [f"{k}={v}" for k, v in self.training_course.get_params().items()]
+        )
         )
 
     async def init_course(self) -> dict:
@@ -168,11 +181,11 @@ class CourseClicker:
         try:
             # наличие надписи "Тест успешно пройден"
             if text := self._get_text_from_element(
-                web_element, "wtq-test-passed-string"
+                    web_element, "wtq-test-passed-string"
             ):
                 return text
             if text := self._get_text_from_element(
-                web_element, "wtq-test-failed-string"
+                    web_element, "wtq-test-failed-string"
             ):
                 return text
         except Exception as e:
@@ -194,7 +207,7 @@ class CourseClicker:
     async def __answer_questions(self, question_elements: list[WebElement]):
         for index, question in enumerate(question_elements):
             if question_text := self._get_text_from_element(
-                question, "wtq-q-question-text"
+                    question, "wtq-q-question-text"
             ):
                 self.loger.info(f"question {index}: {question_text}")
                 await self.sleep(self.min_sec_answer, self.max_sec_answer)
@@ -208,10 +221,10 @@ class CourseClicker:
     def __click_next_question(self, question):
         try:
             if button_element := self._get_web_elements(
-                question, value="wtq-footer-cell-main"
+                    question, value="wtq-footer-cell-main"
             ):
                 if button := self._get_web_elements(
-                    button_element[0], "button", By.TAG_NAME
+                        button_element[0], "button", By.TAG_NAME
                 )[0]:
                     button.click()
         except Exception as e:
@@ -247,7 +260,7 @@ class CourseClicker:
 
     @staticmethod
     def _get_web_elements(
-        element: WebElement, value: str, by: str = By.CLASS_NAME
+            element: WebElement, value: str, by: str = By.CLASS_NAME
     ) -> list[WebElement]:
         element = element.find_elements(by=by, value=value)
         return element or []

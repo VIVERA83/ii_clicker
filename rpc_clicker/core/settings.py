@@ -26,7 +26,7 @@ class Base(BaseSettings):
         """
 
         env_nested_delimiter = "__"
-        env_file = os.path.join(BASE_DIR, ".env_rpc_clicker")
+        env_file = os.path.join(BASE_DIR, ".env_magnum")
         enf_file_encoding = "utf-8"
         extra = "ignore"
 
@@ -49,6 +49,8 @@ class ClickerSettings(Base):
     max_sec: int = 6
     min_sec_answer: int = 15
     max_sec_answer: int = 20
+    start_url: str
+    magnum_url: str
 
 
 class RabbitMQSettings(Base):
